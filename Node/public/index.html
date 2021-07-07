@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+    <h1>Server is running</h1>
+
+    <ul id="status"></ul>
+
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    
+    const print = (message) => {
+        const parent = document.getElementById("status");
+        const item = document.createElement('li');
+        item.innerHTML = message;
+        parent.appendChild(item);
+    }
+
+    const sendHeartbeat = () => {
+        socket.emit('heartbeat', {
+            timestamp: Date.now()
+        });
+    };
+
+    const onHeartbeat = (payload) => {
+        console.log("onHeartbeat", payload);
+        const ping = Date.now() - payload.timestamp;
+        const message = `${ping}ms`;
+        print(message);
+    };
+
+
+    socket.on("connect", () => {
+        console.log("Connected", socket.id);
+        print("Connected to socket.io server")
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Disconnect", socket.id);
+        print("Disconnect from socket.io server")
+    });
+
+    socket.on('heartbeat', onHeartbeat);
+
+    setInterval(() => {
+        sendHeartbeat()
+    }, 1000);
+
+</script>
+
+</html>
